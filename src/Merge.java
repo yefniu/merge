@@ -8,13 +8,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Merge {
 	
 	private ArrayList<String> compress = new ArrayList<String>();
+	
+	private String styleServerIP ;
 
 	/**
 	 * @param args
@@ -24,17 +25,18 @@ public class Merge {
 
 		int jsIndex = 0;
 		int cssIndex = 0;
-		if(args.length > 2){
-			int length = args.length - 1;
-			for(int i = 0 ; i < length ; i++){
-				m.setCompress(args[i + 1]);
-			}
-		}else if(args.length > 1){
-			
-		}else{
-			m.setCompress("notCompress");
-		}
 		
+		// 读取cmd文件中的压缩信息
+		if(args.length > 2){
+			int length = args.length - 2;
+			for(int i = 0 ; i < length ; i++){
+				m.setCompress(args[i + 2]);
+			}
+		// 读取style来源的ip地址
+		}
+		m.setStyleServerIP(args[1]);
+		
+		System.out.println("你正在从" + m.getStyleServerIP() + "服务器合并代码");
 		if(args[0].contains("css")){
 			m.mergeCss(args[0],cssIndex);
 			m.mergeJS(args[0].replaceFirst("css", "js"),jsIndex);
@@ -45,23 +47,6 @@ public class Merge {
 			System.out.println("Wrong path 1");
 		}
 		
-	}
-	public String getCurrentDate(){
-		Calendar today = Calendar.getInstance();
-		String time = new String();
-		
-		String year = Integer.toString(today.get(Calendar.YEAR));
-		time += year;
-		
-		String month = Integer.toString(today.get(Calendar.MONTH) + 1);
-		month = this.beDual(month);
-		time += month;
-		
-		String day = Integer.toString(today.get(Calendar.DAY_OF_MONTH));
-		day = this.beDual(day);
-		time += day;
-		System.out.println(time);
-		return time;
 	}
 	public void makeNewTimeStampFiles(String path ,String timestamp){
 		String parentPath = new File(path).getParentFile().getPath();
@@ -110,7 +95,6 @@ public class Merge {
 					
 				}   
 			}   
-			//return pathMap;   
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -136,6 +120,13 @@ public class Merge {
 		return this.compress.size();
 	}
 	
+	public String getStyleServerIP() {
+		return styleServerIP;
+	}
+	public void setStyleServerIP(String styleServerIP) {
+		this.styleServerIP = styleServerIP;
+	}
+	
 	public void mergeCss (String path,int cssIndex){
 		System.out.println("merge css");
 		try {   
@@ -156,23 +147,15 @@ public class Merge {
 		            	System.out.println("file not exit");
 		            }
 					for (String line; (line = reader.readLine()) != null;) {
-						if(line.contains("/* CSS Merged */")) return ;
+						if(line.contains("/* Merged */")) return ;
 						if(line.contains("/*")){
 							flag = false;
 						}
 						
 						if(line.contains("import") && flag){
 							if(cssIndex == 0){
-								str.append("/* CSS Merged */\n");
-								if(!("notCompress".equals(this.getCompress(0)))){
-									for (int j = 0 ; j < this.getCompressLength() ; j++){
-										str.append("/* " + this.getCompress(j) +  " */\n");
-									}
-									
-								}
-								
+								str = this.getMergeInfo(str);						
 							}
-							
 							cssIndex++;
 							int start = line.indexOf("\"");
 							int end = line.indexOf("\"", start+1);
@@ -184,7 +167,6 @@ public class Merge {
 							flag = true;
 						}
 					}
-					//System.out.println(str);
 					writeFile(str,map.get(i));
 					reader.close();
 				} catch (Exception e) {
@@ -197,8 +179,7 @@ public class Merge {
 	}
 	public void mergeJS (String path,int jsIndex){
 		System.out.println("merge js");
-		try {   
-			//Map<Integer, String> map = readfile("D:/wwwroot/workspace/20111210_103355_1/css/app/search/v2.0/screens/company/20111207", null); 
+		try {
 			Map<Integer, String> map = readfile(path, null);
 			for(int i=0 ; i < map.size(); i++) {
 				boolean flag = true;
@@ -215,7 +196,7 @@ public class Merge {
 		            	System.out.println("file not exit");
 		            }
 					for (String line; (line = reader.readLine()) != null;) {
-						if(line.contains("/* JS Merged */")){
+						if(line.contains("/* Merged */")){
 							return;
 						}
 						if(line.contains("/*")){
@@ -224,12 +205,7 @@ public class Merge {
 						
 						if(!line.startsWith("//") && line.contains("ImportJavscript") && flag){
 							if(jsIndex == 0){
-								str.append("/* JS Merged */\n");
-								if(!("notCompress".equals(this.getCompress(0)))){
-									for (int j = 0 ; j < this.getCompressLength() ; j++){
-										str.append("/* " + this.getCompress(j) +  " */\n");
-									}
-								}
+								str = this.getMergeInfo(str);
 							}
 							jsIndex++;
 							int start = line.indexOf("\"");
@@ -250,7 +226,6 @@ public class Merge {
 							flag = true;
 						}
 					}
-					//System.out.println(str);
 					writeFile(str,map.get(i));
 					reader.close();
 				} catch (Exception e) {
@@ -285,7 +260,7 @@ public class Merge {
 		StringBuffer str = new StringBuffer();
 		try {
 			// TODO Auto-generated method stub
-			URL url = new URL(targetUrl);
+			URL url = new URL(targetUrl.replace("style.china.alibaba.com",this.getStyleServerIP()));
 			InputStream response = url.openStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response));
 			int s;
@@ -312,5 +287,14 @@ public class Merge {
 			// TODO: handle exception
 		}
 		
+	}
+	public StringBuffer getMergeInfo(StringBuffer str){
+		str.append("/* Merged */\n");
+		if(this.getCompressLength() > 0){
+			for (int j = 0 ; j < this.getCompressLength() ; j++){
+				str.append("/* " + this.getCompress(j) +  " */\n");
+			}
+		}
+		return str;
 	}
 }
