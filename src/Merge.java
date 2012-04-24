@@ -17,40 +17,33 @@ import java.util.Map;
 public class Merge {
 	
 	private ArrayList<String> compress = new ArrayList<String>();
-	
-	private String newTimeStamp;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		Merge m = new Merge();
-		//String path = "D:\\wwwroot\\20120111_110097_traderank_1\\js\\app\\search\\v2.0\\screens\\company\\20111207";
 
 		int jsIndex = 0;
 		int cssIndex = 0;
 		if(args.length > 2){
-			//m.setNewStamp(args[2]);
 			int length = args.length - 1;
 			for(int i = 0 ; i < length ; i++){
 				m.setCompress(args[i + 1]);
 			}
-			//m.setCompress(args[1]);
 		}else if(args.length > 1){
-			m.setCompress(args[1]);
+			
 		}else{
-			m.setNewStamp("null");
 			m.setCompress("notCompress");
 		}
+		/*
 		if(m.checkIPAddress().equals("127.0.0.1")){
 			System.out.println("绑定正确");
 		}else{
 			System.out.println("绑定错误");
 			return ;
 		}
-		if("new".equals(m.getNewStamp())){
-			m.makeNewTimeStampFiles(args[0],m.getCurrentDate());
-		}
+		*/
 		
 		if(args[0].contains("css")){
 			m.mergeCss(args[0],cssIndex);
@@ -152,15 +145,6 @@ public class Merge {
 	public int getCompressLength (){
 		return this.compress.size();
 	}
-	
-	public void setNewStamp(String s){
-		this.newTimeStamp = s;
-	}
-	
-	public String getNewStamp(){
-		return this.newTimeStamp;
-	}
-	
 	
 	public void mergeCss (String path,int cssIndex){
 		System.out.println("merge css");
@@ -357,6 +341,7 @@ public class Merge {
 			}
 			System.out.print(ip[i]& 0xff);
 			buff.append(ip[i]&0xff);
+			
 		}
 		return buff.toString();
 	}
