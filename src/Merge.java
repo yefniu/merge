@@ -6,9 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -36,14 +34,6 @@ public class Merge {
 		}else{
 			m.setCompress("notCompress");
 		}
-		/*
-		if(m.checkIPAddress().equals("127.0.0.1")){
-			System.out.println("绑定正确");
-		}else{
-			System.out.println("绑定错误");
-			return ;
-		}
-		*/
 		
 		if(args[0].contains("css")){
 			m.mergeCss(args[0],cssIndex);
@@ -322,27 +312,5 @@ public class Merge {
 			// TODO: handle exception
 		}
 		
-	}
-	public String checkIPAddress(){
-		String host= "style.china.alibaba.com";
-		StringBuffer buff = new StringBuffer();
-		InetAddress address=null;
-		try {
-			address=InetAddress.getByName(host);
-		} catch(UnknownHostException e) {
-			System.out.println("Unknown host");
-			System.exit(0);
-		}
-		byte ip[]=address.getAddress();
-		for (int i=0;i<ip.length;i++) {
-			if (i>0 ){
-				System.out.print(".");
-				buff.append(".");
-			}
-			System.out.print(ip[i]& 0xff);
-			buff.append(ip[i]&0xff);
-			
-		}
-		return buff.toString();
 	}
 }
